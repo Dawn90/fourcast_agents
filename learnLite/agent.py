@@ -58,6 +58,7 @@ class QuizConductorAgent(BaseAgent):
         print("Entered Quiz Conducting loop")
         # Get today's quiz from state
         quiz_data = ctx.session.state.get("quiz")
+        print()
         if not quiz_data:
             print("No quiz found for today.")
             return
@@ -67,7 +68,9 @@ class QuizConductorAgent(BaseAgent):
             quiz_data = json.loads(repair_json(quiz_data))
 
         # If quiz is stored as a dict with day keys, get today's quiz
+
         current_day = ctx.session.state.get("current_day")
+
         if isinstance(quiz_data, dict) and current_day:
             quiz_list = quiz_data.get(f"day_{current_day}", [])
         elif isinstance(quiz_data, list):
@@ -75,6 +78,8 @@ class QuizConductorAgent(BaseAgent):
         else:
             quiz_list = []
 
+        # print("########## Debug - ", quiz_list)
+  
         user_answers = []
         for idx, qa in enumerate(quiz_list):
             print(f"\nQuestion {idx+1}: {qa.get('question')}")
@@ -82,6 +87,7 @@ class QuizConductorAgent(BaseAgent):
             for opt_idx, opt in enumerate(options):
                 print(f"  {opt_idx+1}. {opt}")
             while True:
+                print("########## This has been called ##########")
                 user_input = input("Your answer (enter option number or type your answer): ").strip()
                 # Accept free-form answer or option number
                 if options:
@@ -130,7 +136,8 @@ class LearnLiteOrchestratorAgent(BaseAgent):
         if not curriculum:
             return
 
-        for day, day_curriculum in curriculum.items():
+        for day, day_curriculum in curriculum["curriculum"].items():
+            print("Debug 1:", day, day_curriculum)
             ctx.session.state['current_day'] = day
             ctx.session.state['current_curriculum'] = day_curriculum
 
@@ -149,10 +156,12 @@ class LearnLiteOrchestratorAgent(BaseAgent):
 
             # 4. Extract today's quiz and set in state['quiz']
             quiz_data = ctx.session.state.get("quiz")
+            print("##########Debug - quiz_data: ", quiz_data)
             if isinstance(quiz_data, str):
                 quiz_data = json.loads(repair_json(quiz_data))
             if isinstance(quiz_data, dict):
-                todays_quiz = quiz_data.get(f"day_{day}", [])
+                # todays_quiz = quiz_data.get(f"day_{day}", [])
+                todays_quiz = quiz_data['quiz'].get(day, [])
             elif isinstance(quiz_data, list):
                 todays_quiz = quiz_data
             else:
